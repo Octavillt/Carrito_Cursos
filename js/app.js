@@ -8,12 +8,19 @@ let articulosCarrito = []; // Se Declara un Arreglo Vacio para llenar con los El
 
 cargarEventListeners(); // Manda a llamar las Funciones de addEventListener
 
-function cargarEventListeners(){
+function cargarEventListeners() {
     // Cuando agregas un Curso haciendo click a "agregar a Carrito"
     listaCursos.addEventListener('click', agregarCurso);
 
     // Eliminar Cursos del Carrito
     carrito.addEventListener('click', eliminarCurso);
+
+    // Muestra la Cursos del Carrito del LocalStorage
+    document.addEventListener('DOMContentLoaded', () => {
+        articulosCarrito = JSON.parse(localStorage.getItem('carrito') || []); // Parsea/Convierte a un Array lo que se Encuentra en el LocalStorage
+        // console.log(articulosCarrito);
+        carritoHTML(); // Muestra el Nuevo Arreglo en el HTML 
+    });
 
     // Vaciar el Carrito de Todos los Cursos
     // Cuando sea Poco Codigo es Recomendable usar una Funcion Flecha Anonima
@@ -25,9 +32,9 @@ function cargarEventListeners(){
 }
 
 //Funciones
-function agregarCurso(e){
+function agregarCurso(e) {
     e.preventDefault(); // Previene que se Recargue la Pagína
-    if(e.target.classList.contains('agregar-carrito')){ // Solo se Acciona el Evento Si tiene el Nombre de esa Clase
+    if (e.target.classList.contains('agregar-carrito')) { // Solo se Acciona el Evento Si tiene el Nombre de esa Clase
         const cursoSeleccionado = e.target.parentElement.parentElement; // Se aplica el Traversing
         //console.log(e.target.parentElement);
         leerDatosCurso(cursoSeleccionado);
@@ -36,23 +43,23 @@ function agregarCurso(e){
 
 
 // Elimina Elementos-Curso del Carrito
-function eliminarCurso(e){
+function eliminarCurso(e) {
     //console.log("Función Eliminar Carrito");
     //console.log(e.target.classList);
-    if(e.target.classList.contains("borrar-curso")){ // Solo se Acciona el Evento Si tiene el Nombre de esa Clase
+    if (e.target.classList.contains("borrar-curso")) { // Solo se Acciona el Evento Si tiene el Nombre de esa Clase
         //console.log(e.target.getAttribute("data-id")); 
         const cursoId = e.target.getAttribute("data-id"); // Accede al id de cada Elemento cuando da Click en Eliminar
 
         // Elimina del Arreglo articulosCarrito por el data-id
         articulosCarrito = articulosCarrito.filter(curso => curso.id !== cursoId); /* Trae los demas Elementos del Objeto Excepto
-        al que de limos Click en Eliminar*/ 
+        al que de limos Click en Eliminar*/
         //console.log(articulosCarrito); 
         carritoHTML(); // Itera Nuevamente el Carrito Y Mustra el Nuevo HTML
     }
 }
 
 // Leer el contenido del HTML al que le damos click y extrae la info. del curso
-function leerDatosCurso(curso){
+function leerDatosCurso(curso) {
     //console.log(curso);
 
     // Crear un Objeto con el Contenido del Curso Actual 
@@ -71,19 +78,19 @@ function leerDatosCurso(curso){
     */
     const existe = articulosCarrito.some(curso => curso.id === infoCursor.id); // some() Valida y retorna true o false 
     //console.log(existe);
-    if(existe){
+    if (existe) {
         // Actualiza la Cantidad del Curso al Carrito
         const cursos = articulosCarrito.map(curso => { // Itera los Elementos que Contiene el Arreglo 
             // Valida Si el Curso Seleccionado ya se encuentra en el Objeto
-            if(curso.id === infoCursor.id){
+            if (curso.id === infoCursor.id) {
                 curso.cantidad++; // Incrementa la Catidad de Veces que se Encuentra Elemento en el Arreglo
                 return curso; // Retorna el Objeto Actulizado
-            }else{
+            } else {
                 return curso; // Retorna los Elementos que No estan Duplicados
             }
         });
         articulosCarrito = [...cursos];
-    }else{
+    } else {
         // agregamos Nuevo Curso al Carrito
         // Agrega Elelmentos al Arreglo del Carrito con Spread Operator
         articulosCarrito = [...articulosCarrito, infoCursor]; // Se Toma una Copia de lo que hay en el Carrito y se Concatena los Nuevos Elementos
@@ -92,13 +99,13 @@ function leerDatosCurso(curso){
     carritoHTML();
 }
 
-  // Muestra el Carrito de Compras en el HTML
-  function carritoHTML(){
+// Muestra el Carrito de Compras en el HTML
+function carritoHTML() {
     // Limpiar el HTML para No tener Duplicados
     limpiaHTML();
 
     // Recorre el Carrito y Genera el HTML
-    articulosCarrito.forEach(curso =>{
+    articulosCarrito.forEach(curso => {
         const { imagen, titulo, precio, cantidad, id } = curso;
         //console.log(curso);
         const row = document.createElement('tr'); // Crea una Nueva Fila por cada Curso Seleccionado
@@ -116,15 +123,24 @@ function leerDatosCurso(curso){
         // Agrega el HTML del Carrito en el tbody
         contenedorCarrito.appendChild(row);
     });
+
+    // Sincronizar Carrito de Compras al LocalStorage
+    sincronizarStorage();
+
+}
+
+// Funcion para Sincronizar Carrito de Compras al LocalStorage
+function sincronizarStorage() {
+    localStorage.setItem('carrito', JSON.stringify(articulosCarrito));
 }
 
 // Elimina los Cursos Repetidos del tbody
-function limpiaHTML(){
+function limpiaHTML() {
     // Forma Lenta
     //contenedorCarrito.innerHTML = '';
 
     // Forma Rapida
-    while (contenedorCarrito.firstChild){
+    while (contenedorCarrito.firstChild) {
         contenedorCarrito.removeChild(contenedorCarrito.firstChild);
     }
 
